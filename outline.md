@@ -131,7 +131,10 @@ If we choose to commit with `git commit` and no arguments, git will enter into a
 ```
 short, descriptive message for my dev work
 
-Here I describe in detail a little more about the dev work that I did. Maybe I added a few new functions. I could list them here.
+Here I describe in detail a little more about the dev work that I
+did. Maybe I added a few new functions. I could list them here. Of
+course, since I'm only editing my dissertation this longer form of
+the commit message might not be as relevant to my work.
 
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
@@ -260,6 +263,7 @@ Covered commands + concepts:
 # 4.0 Merging
 
 Covered commands + concepts:
+
 * `git merge [branchname]`
 * `git merge [branchname] [otherbranch]`
 * merging vs. rebasing
@@ -270,7 +274,92 @@ Some projects prefer to use a rebase-based method for development.
 
 # 5.0 Conflicts  
 
-Sometimes we can't automatically merge a branch into its desired destination. When that happens 
+Sometimes we can't automatically merge a branch into its desired destination.
+git is smart, but sometimes it's much more obvious to a human what should be removed in a
+conflict.
+When that happens git will notify us that we have to do a merge conflict resolution.  
+
+In `AUTHORS.md` I've added some descriptions of my dissertation committee members on a branch called `authors` but on the `master` branch
+I've added their actual names. When I try to merge, git notifies me of the issue:
+
+```
+$ git branch
+  master
+* authors
+$ git merge master
+Auto-merging AUTHORS.md
+CONFLICT (content): Merge conflict in AUTHORS.md
+Recorded preimage for 'AUTHORS.md'
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+If I open `AUTHORS.md`, we can see that git has modified the file to include the changes from both branches. Now I need to choose which changes I want to incorporate for this merge.
+
+```
+<<<<<<< HEAD
+My committee has the following people
+* My national lab colleague
+* Another professor in my research area
+* The guy who wrote the spherical cow book
+=======
+My committee members are:
+* Dr. Tara Pandya
+* Prof Max Fratoni
+* Prof John Harte
+>>>>>>> master
+```
+
+To do this, I need to delete everything out of the file except what I want to keep. My process looks like this:
+
+```
+$ vi AUTHORS.md
+$ git status
+On branch authors
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+
+	both modified:   AUTHORS.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+$ git add AUTHORS.md
+$ git status
+On branch merge-branch
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+
+	modified:   AUTHORS.md
+$ git commit -m 'merge master into authors'
+Recorded resolution for 'AUTHORS.md'.
+[authors 0d253a2] merge master
+```
+
+Note that the prompt here that git shows is is very similar to that of a standard file modification, but we see some additional wording, like
+> You have unmerged paths.
+> All conflicts fixed but you are still merging.
+
+Remember that git always tries to be helpful, so reading what's returned by `git status` can be helpful.
+
+tips:
+* you can always abort a merge if you realize you're not ready with `git merge --abort`
+
+
+# Interlude: local vs. remote git
+
+Up until this point, we've done exclusively command-line git. All of this has been on our *local machine*. We could be version-controlling our work and no person in the world could access it. Local version control is still helpful! We can go back to previous states and manage our own work, but we don't have a remote backup (unless you're keeping your git repository in a google drive folder or something, but that's unnecessary). Local git is great because you don't need internet access. You don't need a github account! You just need git and your computer.
+
+Using git + a remote backup allows us broader options than version controlling our work on our local computer. We have a remote backup that will safely store our work. If our computer gets stolen (or if you're like me and maybe accidentally spill coffee on your computer), we can re-clone our work and start right where we left off on a brand new machine!  
+
+There are many remote backups that exist for git. `github`, `gitlab`, `bitbucket`, or even a local server will allow you to back up your repository. Each of these options differs slightly. Today I'll be focusing on using github as a remote system.
+
+Github allows us to not only store remote copies of our work, but also to collaborate and manage our repository on the web. Earlier we did command-line based conflict resolutions. Github has tools to do conflict resolutions on their site, allowing for colleagues that may not be as confident with command-line based workflows to still contribute to OSS. To use github, and to backup our repository we need to have an internet connection. We only need the internet connection when we're directly interacting with our remote -- to continue adding and committing locally we still don't require an internet connection. But to re-sync local changes up to github we'll need that connection. As we move into the next section I'll be showing how our local and remote git histories change as we make changes in our repository.
+
+Consistently pushing our commits to github has an additional bonus: no matter how much we might mess up our local working copy, we can always get a fresh clone from github.
 
 # 6.0 Remotes
 
@@ -291,6 +380,12 @@ Sometimes we find ourselves looking up the same git command over and over again 
 
 ```
 git config --global alias.sprout "checkout -b"
+```
+
+If you're prone to typos, it can be helpful to alias those too!
+
+```
+git config --global alias.connit "commit"
 ```
 
 As with other config options, we can check our aliases with `git config --list`. If we have a lot of config options, we can further pipe that to filter out only alias commands with `git config --list | grep alias`
