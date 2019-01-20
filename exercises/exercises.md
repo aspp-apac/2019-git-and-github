@@ -1,12 +1,5 @@
 # Section 1.0:
 
-Let's assume we're all writing a paper to a forward-thinking journal that plans
-to have the entire paper written and reviewed with version control and on
-github. This journal is also very permissive and is allowing you to write
-everything in markdown (wow! So cool!). Right now, you're at a internet-free
-writing retreat, so you're going to start version-controlling your work on your
-computer without github for a while.
-
 * set your config settings for your user name and email.
 * check your config settings. Do you see anything interesting? What text editor
 are we using in this workshop?
@@ -24,6 +17,7 @@ scientific python.
 * add the file to the staging area
 * check the status of the file
 * commit the file
+* add your name to authors.md, then commit the file. We're working on this paper together after all!
 * check the log of the repository again. Does it look different? How?
 
 # Section 2.0: Deleting, Cancelling, Unstaging
@@ -52,7 +46,7 @@ state before. What does it look like? Try `git log` and `git status` in this
 state. Discuss with your partner the different ways you'd go back to the most
 recent commit of the appendices branch. Try them out. use `git status` and `git
 log` to help you.
-* After this, `git checkout appendices`
+* After this, `git checkout methodology`
 * Edit the metholology.md file. Try to write a bit about how python is going to be used for the work that you do, and what python packages are going to be used to make that happen. Add it to staging and commit it.
 * Go back to the master branch. Try to delete the `methodology` branch with `git
 branch -d`. What does it look like?
