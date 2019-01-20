@@ -3,8 +3,9 @@
 Covered commands:
 
 * `git config`
-* creating a repsitory with `git init` or `git clone`
+* creating a repository with `git init` or `git clone`
 * `git clone`
+* `git init`
 * `git add`
 * `git commit`
 * `git status`
@@ -26,10 +27,15 @@ git config --global user.email "youremail@domain.com"
 Preferred Text Editor (used by git to modify commit messages, among other
 things):
 ```
-git config --global core.editor "vim"
+git config --global core.editor "atom --wait"
 ```
-you can look up how to set your preferred editor
+For today, we'll be using atom. But in the future you can look up how to set
+your preferred editor
 [here](http://swcarpentry.github.io/git-novice/02-setup/index.html)
+
+In the case of atom or any other graphical user text editor we need to set the
+editor to wait (with --wait or -w) to make sure that git waits until the file is
+saved and closed to finish commiting the file.
 
 An aside: we can change git settings for repositories only, or for the entire
 system. This is up to your preference, but perhaps you have a project associated
@@ -117,7 +123,11 @@ nothing to commit (create/copy files and use "git add" to track)
 A file in a git repository can be in one of four states: *untracked*,
 *unmodified*, *modified*, and *staged*. When we go through the process of
 editing a file, adding it, and committing it, we're cycling through these
-different states. These states are reflected when we use `git status` to look at
+different states. The figure below from the git book shows this process visually.
+
+![git cycle](images/git_file_status_lifecycle.png)
+
+These states are reflected when we use `git status` to look at
 the status of a directory. Let's create go through this process with regular
 `git status` checks and see what this looks like.
 
@@ -397,20 +407,118 @@ Covered commands:
 * `git reset HEAD <filename>`
 * `git checkout -- <filename>`
 
+
+In the last section we modified our .gitignore file to ignore hdf5 files. Let's add it to the staging area.
+
+```
+$ git add .gitignore
+$ git status
+On branch master
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	modified:   .gitignore
+```
+
+Actually, it might be more relevant for us to ignore all of our h5 files, rather than by a name specifically. We can unstage the file and modify it.
+
+```
+$ git reset HEAD .gitignore
+Unstaged changes after reset:
+M	.gitignore
+$ vi .gitignore
+$ git status
+$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   .gitignore
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+If we concatenate the file, we can see that we've modified our file as expected.
+
+```
+$ cat .gitignore
+*.h5
+```
+
+To unstage the file, we've used `git reset HEAD <filename>`. Earlier in history, we talked about HEAD pointing to a specific commit. This specific usage of HEAD with `git reset` unstages files. If we use a variant of git reset and use `git reset HEAD~2 <filename>`, git will get the version of filename in two commits previously and put it in the staging area. git reset will always affect the staging area of your repository.
+
+We can also completely remove changes we've made in the working directory with `git checkout -- <file>`. This will return us to the version of the file at our last commit. However, this is slightly dangerous because you will completely lose the changes you've made. If you want to save your changes for later, you can see some of the extras at the end of the lesson using `git stash`.
+
+`git diff`, like its sister command diff, will compare different files or
+versions of a file. On its own `git diff` will tell us the difference in our working directory that we haven't yet staged for commit. We can also compare arbitray versions of the file using commit hashes or branch names.
+
+Now that we have unstaged .gitignore, we can use `git diff`
+
+```
+$ git diff .gitignore
+diff --git a/.gitignore b/.gitignore
+index 511561c..79df784 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1 +1 @@
+-mydata.h5
++*h5
+```
+
 Sometimes we need to delete files out of our repository, rename them, or move
 them in and out of the staging area. git has commands to help us do this. We
 don't *have to* use these commands, but unstaging them if we decide we want to
 go back is much easier using them.
 
+`git rm <filename>` will remove the file completely from the working directory and show that it has been deleted
 
-`git diff`, like its sister command diff, will compare different files or
-versions of a file. On its ow
+```
+$ git rm AUTHORS.md
+$ git status
+On branch master
+Changes to be committed:
+ (use "git reset HEAD <file>..." to unstage)
 
+ deleted:    AUTHORS.md
+
+```
+
+this looks different than if we just remove the file. First let's go back to our old copy of AUTHORS.md
+```
+$ git checkout HEAD AUTHORS.md
+```
+and now try to delete it the normal way.
+```
+$ rm AUTHORS.md
+$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	deleted:    AUTHORS.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+in order to commit this change, we'd also need to do `git add AUTHORS.md` to put our deleted file into the staging area. `git rm` makes this process more convenient.
+
+Similarly, we can move files with `git mv <oldname> <newname>`, which renames oldname to newname, and then adds oldname and newname to staging.
+
+```
+$ git mv AUTHORS.md contributors.md
+$ git status
+On branch master
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	renamed:    AUTHORS.md -> contributors.md
+```
 
 tips:
 * just like diff, git has a special `git grep` command that only greps files
 tracked in the git repository. This is especially nice to use if you have large
-data files in your directory but they aren't version controlled by git. 
+data files in your directory but they aren't version controlled by git.
 * git helps save us from ourselves. Without using version control, rm would
 make us lose a file forever. Thanks to version control we can restore it.
 
@@ -420,15 +528,53 @@ Covered commands + concepts:
 * `git branch`
 * `git checkout`
 
-Branching is a way for us to work on software in
+Branching is a way for us to work on different features in an isolated environment.
+
+As we've talked about in this lesson, commits are repository snapshots.
+![snapshots](git_0-300dpi.png)
+
+A branch is a pointer to a commit (the most recent commit in the branch history).
+![branch pointer](images/git_1-300dpi.png)
+
+We can have multiple branches.
+![branches](images/git_2-300dpi.png)
+
+And we know which branch we're in with HEAD.
+![head looks at branch](images/git_3-300dpi.png)
+
+We can switch branches.
+![head looks at other branch](images/git_4-300dpi.png)
+
+And we can commit in a branch, which will update both the branch and the HEAD pointer.
+![commit in branch](images/git_5-300dpi.png)
+
+We can commit again.
+![moving pointers](images/git_6-300dpi.png)
+
+And then we can switch branches.
+![move head after commit](images/git_7-300dpi.png)
 
 # 4.0 Merging
 
 Covered commands + concepts:
 
 * `git merge [branchname]`
-* `git merge [branchname] [otherbranch]`
 * merging vs. rebasing
+
+Git merge is a powerful tool in our git arsenal. We use git merge to
+incorporate the changes in one branch to another. A bit later we'll go over
+merging things other than local branches.
+
+Let's say we have the same two branches that have been worked on as shown
+previously. We're on the branch master:
+![two branches](images/git_8-300dpi.png)
+
+and we can merge testing into it:
+![move head after commit](images/git_9-300dpi.png)
+
+From there, we can continue working. All commits in this diagram will show up
+in our history with git log.
+![move head after commit](images/git_10-300dpi.png)
 
 A quick aside on rebasing:
 
@@ -519,7 +665,7 @@ by `git status` can be useful to us figuring out what to do.
 
 tips:
 * you can always abort a merge if you realize you're not ready with `git merge
---abort`
+--abort`.
 * short lines make merge conflicts much easier. If you don't have hard wrapping
 set in your text editor, you may have a merge conflict that looks like an
 entire paragraph.
@@ -571,15 +717,156 @@ Covered commands + concepts:
 * `git push`
 * `git fetch` and `git merge`
 
+When we use git in conjunction with remotes, we use a few more commands. `git remote` will list all of our remotes by name. If we want to know a bit more about them (like what URL each is associated with), we can use `git remote -v`.  
+
 # 7.0 Collaboration
 
-* `git fetch` and `git merge`
 * forking
 * pull requests
 * issues
 * comparing changes
+* `git fetch` and `git merge` with multiple remotes
 * tagging issues in PRs
 
+Often we will have changes on our remote that aren't on our local machine yet. There are a few ways we can get these changes pulled into our local machine effectively. First, `git fetch` will copy the remote changes into our git folder. `git fetch` on its own will copy all of the remote branches and stores them as remote tracking branches. We can see them with `git branch -a`. As an example, I'm going to fetch a repository I haven't updated in a few days. I have my fork, `origin`, and I have the upstream package that I forked that I named `upstream`. First I'll fetch upstream:
+
+```
+$ git fetch upstream
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (27/27), done.
+remote: Compressing objects: 100% (10/10), done.
+remote: Total 16 (delta 12), reused 8 (delta 6), pack-reused 0
+Unpacking objects: 100% (16/16), done.
+From https://github.com/yt-project/yt
+   2fa8519dd..29005b829  master     -> upstream/master
+```
+
+We can see the commit references between master and upstream/master as `2fa8519dd..29005b829`. We can look at all the commits between master and upstream/master with the log:
+
+```
+$ git log --oneline master..upstream/master
+29005b829 (upstream/master) Merge pull request #2133 from brittonsmith/np16
+9c38681a8 Provide list type to np.column_strack to fix numpy 1.16 future warning.
+b63f72f13 Merge pull request #2132 from neutrinoceros/doc_dev_conda
+1b944e26b Add documentation on how to install the dev version of yt within anaconda and without using pip
+2fa8519dd Merge pull request #2122 from chummels/shea_fix
+6b096c0e7 Simplifying logic with np.asanyarray()
+2efd85bd4 Adding test for annotation of YTArray not in code_units.
+07e0b6c0f Making sanitize_coords handle both YTArrays and numpy arrays.
+e1765465b Making PlotCallback methods private.
+6e595e992 Merge pull request #2128 from cphyc/fix/sphere_unit_mistake
+d8bc026f0 Convert radius in right unit
+dfa4a9e18 Merge pull request #2125 from ngoldbaum/debian-fix
+6649bc658 run tests in temporary directory. fixes #2123
+4530d035a Updating docstrings for annotate_marker and annotate_arrow.
+7264d040a Updating callback tests to cover annotate_arrow and annotate_marker with multiple points.
+eef928b13 Cleaning up sanitize_coord().
+a5e8d92e7 Making annotate_arrow() work with multiple points.
+12acb1644 Modifying sanitize_coord_system to handle multiple points.
+26c70d1d0 sanitize_coord_system was returning just the first coordinate if coord_system == data; now return the full list
+```
+
+We can expand this a bit to see where HEAD is pointed.
+
+```
+$ git log --oneline -n 15 upstream/master
+29005b829 (upstream/master) Merge pull request #2133 from brittonsmith/np16
+9c38681a8 Provide list type to np.column_strack to fix numpy 1.16 future warning.
+b63f72f13 Merge pull request #2132 from neutrinoceros/doc_dev_conda
+1b944e26b Add documentation on how to install the dev version of yt within anaconda and without using pip
+2fa8519dd Merge pull request #2122 from chummels/shea_fix
+6b096c0e7 Simplifying logic with np.asanyarray()
+2efd85bd4 Adding test for annotation of YTArray not in code_units.
+07e0b6c0f Making sanitize_coords handle both YTArrays and numpy arrays.
+e1765465b Making PlotCallback methods private.
+6e595e992 Merge pull request #2128 from cphyc/fix/sphere_unit_mistake
+d8bc026f0 Convert radius in right unit
+dfa4a9e18 Merge pull request #2125 from ngoldbaum/debian-fix
+6649bc658 run tests in temporary directory. fixes #2123
+97054577d (HEAD -> master, origin/master, origin/HEAD) Merge pull request #2124 from zingale/master
+4efd4b2ea update the docs to reflect the fact that rays are not ordered.
+```
+
+You can see the commit IDs in this log between master and upstream/master reflect those that were returned with the fetch command. We can also see that my fork, origin/master is at the same point as my local copy of master. Let's merge upstream/master into master and see how the log changes.
+
+```
+$ git merge upstream/master
+Updating 97054577d..29005b829
+Fast-forward
+ .travis.yml                                           |   1 +
+ doc/source/installing.rst                             |  11 ++++--
+ yt/frontends/gadget/tests/test_outputs.py             |   6 +++
+ yt/frontends/stream/io.py                             |   4 +-
+ yt/visualization/plot_modifications.py                | 108 +++++++++++++++++++++++++++++++----------------------
+ yt/visualization/tests/test_callbacks.py              |  13 +++++++
+ yt/visualization/volume_rendering/tests/test_scene.py |   6 ++-
+ 7 files changed, 99 insertions(+), 50 deletions(-)
+$ git log --oneline -n 15 upstream/master
+29005b829 (HEAD -> master, upstream/master) Merge pull request #2133 from brittonsmith/np16
+9c38681a8 Provide list type to np.column_strack to fix numpy 1.16 future warning.
+b63f72f13 Merge pull request #2132 from neutrinoceros/doc_dev_conda
+1b944e26b Add documentation on how to install the dev version of yt within anaconda and without using pip
+2fa8519dd Merge pull request #2122 from chummels/shea_fix
+6b096c0e7 Simplifying logic with np.asanyarray()
+2efd85bd4 Adding test for annotation of YTArray not in code_units.
+07e0b6c0f Making sanitize_coords handle both YTArrays and numpy arrays.
+e1765465b Making PlotCallback methods private.
+6e595e992 Merge pull request #2128 from cphyc/fix/sphere_unit_mistake
+d8bc026f0 Convert radius in right unit
+dfa4a9e18 Merge pull request #2125 from ngoldbaum/debian-fix
+6649bc658 run tests in temporary directory. fixes #2123
+97054577d (origin/master, origin/HEAD) Merge pull request #2124 from zingale/master
+4efd4b2ea update the docs to reflect the fact that rays are not ordered.
+```
+
+now we can see that my local copy of master is pointed to the same place as upstream/master. We can update my fork with git push:
+
+```
+$ git push origin master
+Counting objects: 92, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (46/46), done.
+Writing objects: 100% (92/92), 12.84 KiB | 4.28 MiB/s, done.
+Total 92 (delta 72), reused 61 (delta 46)
+remote: Resolving deltas: 100% (72/72), completed with 20 local objects.
+To https://github.com/munkm/yt.git
+   97054577d..29005b829  master -> master
+$ git log --oneline -n 3 upstream/master
+29005b829 (HEAD -> master, upstream/master, origin/master, origin/HEAD) Merge pull request #2133 from brittonsmith/np16
+9c38681a8 Provide list type to np.column_strack to fix numpy 1.16 future warning.
+b63f72f13 Merge pull request #2132 from neutrinoceros/doc_dev_conda
+```
+
+Now our local copy, our fork, and our project's repository all have master
+pointed to the same commit.  
+
+aside: this is why branching is powerful. If we're working in a branch that's
+constantly being updated with remote changes, we'll have to fetch and merge and
+potentially perform a lot of conflict resolutions. We don't have to do that if
+we're working in a thematic branch.
+
+A fork is a copy of a repository associated with your user account (or another
+organization). Earlier in the lesson we were pushing changes up to our
+individual github accounts. However, you don't always have git commit rights to
+different repositories. We don't want random people going and changing our
+research code or our research papers! Forks help us by allowing people to copy
+our code and make changes separately, and we can integrate those changes in our
+own time.
+
+Earlier we talked about `git fetch` and `get merge`. These two commands together
+are `git pull`. A pull request is a request from a user for the a collaborator
+or organization to pull (or fetch and merge) their changes into their own
+repository. This is the way that we incorporate our work into another repository
+without commit rights. Pull requests can also be submitted on a single
+repository between two branches.  
+
+Github also has features that allow us to easily compare changes. We can do this on the command line the same way we diff two branches:
+
+Or we can use the github GUI.
+
+tips:
+* always pull down fresh changes from master before you branch.
+* branching is powerful because you
 
 # 8.0 A few extra git things!
 
