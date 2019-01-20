@@ -3,12 +3,13 @@
 Covered commands:
 
 * `git config`
-* `git init`
+* creating a repsitory with `git init` or `git clone`
 * `git clone`
 * `git add`
 * `git commit`
 * `git status`
 * `git log`
+* `git checkout`
 
 #### Setting up git
 
@@ -60,8 +61,10 @@ mentioned above.
 * To initialize a new repository from the command line: `git init` (this option
 doesn't require internet access or a github account)
 * We can also get an existing repository from a remote server with `git clone
-https://github.com/orgname/reponame.git`. This command will create a new folder
-called **reponame** in your current working directory and will copy the contents
+https://github.com/username/reponame.git`. This command will create a
+new folder
+called **reponame** in your current working directory and will copy
+the contents
 of the remote repository into that folder. (this option requires internet, and
 depending on permissions you may need a github account)
 
@@ -99,8 +102,8 @@ Our most used commands in git will be the following:
 repository.
 * `git log` will show the commit log
 
-Now that we've initialized an empty repository in `/dissertation/`, we can check
-the status:
+Now that we've initialized an empty repository in `/dissertation/`, we can
+check the status:
 
 ```
 $ git status
@@ -150,7 +153,9 @@ On branch master
 nothing to commit, working tree clean
 ```
 
-Here we've seen AUTHORS.md go from untracked -> modified -> staged -> unmodified. We can check the log to see what our history looks like.
+Here we've seen AUTHORS.md go from
+untracked -> modified -> staged -> unmodified. We can check the log
+to see what our history looks like.
 
 ```
 $ git log
@@ -269,12 +274,76 @@ bacea6a99 Remove :func: markup from mlab docstrings.
 ```
 
 We can return to previous states in our repository with the commit hashes that
-are listed in the log. Here I'll go back a few commits:
+are listed in the log. We can navigate in our history and see previous versions
+of our repository. To do this, we can use `git checkout <commit ID>`, which will
+move HEAD, a pointer to the tip of master (this was shown to us in the log as
+`HEAD -> master`, to the commit ID of our choice). I'll go back a few commits to
+`57d031d23`:
+
+```
+$ git checkout 57d031d23
+Note: checking out '57d031d23'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at 57d031d23... Merge pull request #13178 from anntzer/derole
+$ git status
+HEAD detached at 57d031d23
+nothing to commit, working tree clean
+```
+
+With HEAD pointing to a commit farther back than the tip of master, we are in
+`Detached HEAD` state. This means we're pointing to a specific commit rather
+than the tip of the branch. Performing a `git log` here shows us all commits
+previous to `57d031d23`, but none of the commits going forward.
+
+```
+$ git log -n 10 --oneline
+57d031d23 (HEAD) Merge pull request #13178 from anntzer/derole
+beed2d80e Merge pull request #13089 from anntzer/quivermatrix
+aef686b43 Merge pull request #13179 from anntzer/axis_artist-deprecated
+d9d3bdb49 Avoid calling a deprecated API in axis_artist.
+bacea6a99 Remove :func: markup from mlab docstrings.
+6b3c015da Merge pull request #13047 from timhoffm/doc-contourf-extend-cmap
+d12be5098 Enable local doc building without git installation (#13015)
+e1750a8e8 Don't try to find TeX-only fonts when layouting TeX text. (#13170)
+a5988114c Merge pull request #12957 from Milania1/win-user-fonts
+4cdd07189 Merge pull request #12951 from anntzer/get_layout
+```
+
+In this state we can look around, but we shouldn't make changes. If we do, our
+changes going forward from `57d031d23` will not be associated with a branch, and
+we won't be able to navigate back to them easily. To go back to our most recent
+commit, we can type `git checkout master`, which will return us to the tip of
+our branch, master (more on branching later).  
+
+```
+$ git checkout master
+Previous HEAD position was 57d031d23... Merge pull request #13178 from anntzer/derole
+Switched to branch 'master'
+Your branch is up-to-date with 'origin/master'.
+$ git log -n 2 --oneline
+a552780fa (HEAD -> master, origin/master, origin/HEAD) Merge pull request #13107 from anntzer/bboxbase
+a728b91c9 Merge pull request #13108 from anntzer/capitalize-docstrings
+```
+
+If you do happen to commit off of a detached head state, this page in the git
+book is a useful resource to make references out of these new commits:
+https://git-scm.com/docs/git-checkout#_detached_head
+
 
 #### Ignoring Things
 
 What if you have a series of large data files that you'd like to put into your
-repository folder, but version controlling them isn't necessary? We can *ignore*
+repository folder, but version controlling them isn't necessary?
+We can *ignore*
 files and entire folders from being tracked by git. Let's say I get a data file
 called `mydata.h5` and I want to ignore it. This is the series of commands that
 I'd execute to make that happen.  
@@ -315,7 +384,8 @@ build/
 mydata.h5
 ```
 
-This particular .gitignore file will ignore all files ending in .zip, everything
+This particular .gitignore file will ignore all files ending in .zip,
+everything
 in the build folder, and a hdf5 data file called mydata.
 
 # 2.0 Deleting and Canceling
@@ -328,14 +398,27 @@ Covered commands:
 * `git checkout -- <filename>`
 
 Sometimes we need to delete files out of our repository, rename them, or move
-them in and out of the staging area.
+them in and out of the staging area. git has commands to help us do this. We
+don't *have to* use these commands, but unstaging them if we decide we want to
+go back is much easier using them.
+
+
+`git diff`, like its sister command diff, will compare different files or
+versions of a file. On its ow
+
+
+tips:
+* just like diff, git has a special `git grep` command that only greps files
+tracked in the git repository. This is especially nice to use if you have large
+data files in your directory but they aren't version controlled by git. 
+* git helps save us from ourselves. Without using version control, rm would
+make us lose a file forever. Thanks to version control we can restore it.
 
 # 3.0 Branching
 
 Covered commands + concepts:
 * `git branch`
 * `git checkout`
-* detached head state
 
 Branching is a way for us to work on software in
 
@@ -374,8 +457,11 @@ Recorded preimage for 'AUTHORS.md'
 Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-If I open `AUTHORS.md`, we can see that git has modified the file to include the
-changes from both branches. Now I need to choose which changes I want to
+If I open `AUTHORS.md`, we can see that git has modified the file to
+include the
+changes from both branches. By navigating to the segment between where git has
+added `<<<<<<< HEAD` and `>>>>>>> branchname` you can see what the conflicts
+are. Now I need to choose which changes I want to
 incorporate for this merge.
 
 ```
@@ -428,12 +514,15 @@ standard file modification, but we see some additional wording, like
 > You have unmerged paths.
 > All conflicts fixed but you are still merging.
 
-Remember that git always tries to be helpful, so reading what's returned by `git
-status` can be helpful.
+Remember that git always tries to be helpful, so reading what's returned
+by `git status` can be useful to us figuring out what to do.
 
 tips:
 * you can always abort a merge if you realize you're not ready with `git merge
 --abort`
+* short lines make merge conflicts much easier. If you don't have hard wrapping
+set in your text editor, you may have a merge conflict that looks like an
+entire paragraph.
 
 
 # Interlude: local vs. remote git
@@ -479,15 +568,20 @@ clone from github.
 Covered commands + concepts:
 * `git remote add [name] [url]`
 * `git pull`
-* `git fetch` and `git merge`
 * `git push`
+* `git fetch` and `git merge`
+
+# 7.0 Collaboration
+
+* `git fetch` and `git merge`
 * forking
 * pull requests
+* issues
 * comparing changes
+* tagging issues in PRs
 
 
-
-# 7.0 A few extra git things!
+# 8.0 A few extra git things!
 
 #### Aliases
 
@@ -506,7 +600,8 @@ If you're prone to typos, it can be helpful to alias those too!
 git config --global alias.connit "commit"
 ```
 
-As with other config options, we can check our aliases with `git config --list`.
+As with other config options, we can check our aliases with
+`git config --list`.
 If we have a lot of config options, we can further pipe that to filter out only
 alias commands with `git config --list | grep alias`
 
@@ -545,8 +640,8 @@ reference: https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning
 
 What if you've committed something and realized you've made an error in your
 commit? Maybe you misspelled something in the commit message? Maybe you forgot
-to add a closing curly brace at the end of a dictionary in your code? Enter `git
-commit --amend`
+to add a closing curly brace at the end of a dictionary in your code?
+Enter `git commit --amend`
 
 ######  Scenario 1: fixing a commit message
 
@@ -559,7 +654,8 @@ $ git commit -m 'this commit is missssspelled'
 ```
 
 I can use `git commit --amend` immediately after to pop into most recent commit
-message file and edit it. (note: just like with git commit on its own, this will
+message file and edit it. (note: just like with git commit on its own,
+this will
 pop you into your chosen text editor that you specified at the beginning of the
 lesson). After we close out and save, git will tell us about our amended
 message.
