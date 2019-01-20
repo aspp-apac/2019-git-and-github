@@ -18,7 +18,8 @@ sense to you. (e.g. I like to store all git repos in a folder called ~/repos/)
 * clone our example repository for this lesson at:
 * Explore the log of the repository
 * create a new file called introduction.md and edit it to include a
-one-sentence introduction for a paper on your research.
+one-sentence introduction for a paper on your research and how it relates to  
+scientific python.
 * check the status of this file
 * add the file to the staging area
 * check the status of the file
@@ -32,7 +33,7 @@ one-sentence introduction for a paper on your research.
 * remove this file from the staging area
 * add this file back to the staging area
 * commit this file
-* move this file to a file called conclusions.md
+* move this file to a file called data-results.md
 * check that you've moved it with git status
 * move it back to results.md
 * check what it looks like with git status now that you've moved it back
@@ -44,7 +45,7 @@ detail.
 
 # Section 3.0: Branching
 
-* create a new branch in your research paper repo called `appendices` and
+* create a new branch in your research paper repo called `methodology` and
 checkout to it
 * check out a previous commit on that branch. We discussed `detached HEAD`
 state before. What does it look like? Try `git log` and `git status` in this
@@ -52,26 +53,25 @@ state. Discuss with your partner the different ways you'd go back to the most
 recent commit of the appendices branch. Try them out. use `git status` and `git
 log` to help you.
 * After this, `git checkout appendices`
-* Make a new file related to an appendix you plan to put in your paper. Add
-some text to it, then add it to staging and commit it.
-* Go back to the master branch. Try to delete the `appendices` branch with `git
+* Edit the metholology.md file. Try to write a bit about how python is going to be used for the work that you do, and what python packages are going to be used to make that happen. Add it to staging and commit it.
+* Go back to the master branch. Try to delete the `methodology` branch with `git
 branch -d`. What does it look like?
 
 # Section 4.0: Merging
 
 * check out master. Look at the history of this branch.
-* check out `appendices`. Look at the history of this branch.
-* Merge your appendices branch into master.
-* If you're not on master, check out master and look at the history.
-* Now try to delete the appendices branch like you did before. What happens?
+* check out `methodology`. Look at the history of this branch.
+* Merge your methodology branch into master.
+* Look at the history now that methodology has been merged.
+* Now try to delete the methodology branch like you did before. What happens?
 
 # Section 5.0: conflicts
 
-* check out the branch `background` look through its history.
+* check out the branch `authors` look through its history.
 * go back to master
-* try to merge background into master. What happens?
+* try to merge authors into master. What happens?
 * check the status with `git status`
-* open and edit the file that has conflicts. Save your resolved conflicts.
+* open and edit the file that has conflicts. Make sure that all unique authors are included from each commit, but no names are duplicated. Save your resolved conflicts.
 * check the status again with `git status`
 * add and commit your changes
 
