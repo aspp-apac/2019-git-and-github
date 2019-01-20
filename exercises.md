@@ -1,7 +1,7 @@
 # Section 1.0:
 
 Let's assume we're all writing a paper to a forward-thinking journal that plans
-to have your entire paper written and reviewed with version control and on
+to have the entire paper written and reviewed with version control and on
 github. This journal is also very permissive and is allowing you to write
 everything in markdown (wow! So cool!). Right now, you're at a internet-free
 writing retreat, so you're going to start version-controlling your work on your
@@ -113,5 +113,9 @@ and commit changes if necessary.
 in the zulip chat so we can start reviewing it immediately.
 
 Extra credit:
+* look through the other groups' pull requests and submit a review on one of
+  them. You can always review a pull request as a non-member of the community
+  -- reviews from package users are especially helpful even if they're not core
+  developers!
 * submit a PR or file an issue to the lesson we did today!:
   https://github.com/munkm/git-github-tutorial/
